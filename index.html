@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NaturalCC Code Agent - 本地代码编辑代理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans SC', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .gradient-text {
+      background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-glow {
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(59,130,246,0.12) 0%, transparent 100%);
+    }
+    .card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px -12px rgba(37,99,235,0.15);
+    }
+  </style>
+</head>
+<body class="font-sans text-slate-800 bg-white antialiased">
+
+  <!-- Navbar -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2 text-lg font-bold text-slate-900">
+        <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
+        </svg>
+        NaturalCC Code Agent
+      </a>
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+        <a href="#" class="text-brand-600">首页</a>
+        <a href="https://pulved.github.io/code_agent_docs/" target="_blank" class="hover:text-brand-600 transition-colors">帮助文档</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/CGCL-codes/naturalcc" target="_blank" class="p-2 text-slate-500 hover:text-brand-600 transition-colors" aria-label="GitHub">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+        </a>
+        <a href="#webui-placeholder" class="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors shadow-sm shadow-brand-500/20">
+          进入工作台 (Launch Web UI)
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="relative pt-32 pb-20 md:pt-44 md:pb-32 hero-glow">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-slate-900 mb-4">
+        NaturalCC Code Agent
+      </h1>
+      <h2 class="text-xl md:text-2xl font-medium text-slate-600 mb-6 leading-relaxed">
+        把静态项目理解能力和 Aider 的文件修改能力组合在一起的本地代码编辑代理。
+      </h2>
+      <p class="max-w-2xl mx-auto text-base md:text-lg text-slate-500 leading-relaxed mb-10">
+        针对 C/C++ 等工程化项目，先解析目标项目收集上下文，生成语义增强 Prompt，再交由 Aider 精准修改目标文件。
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#webui-placeholder" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold text-white bg-brand-600 rounded-xl hover:bg-brand-700 transition-all shadow-lg shadow-brand-500/20">
+          Launch Web UI
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+          </svg>
+        </a>
+        <a href="#usage" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold text-slate-700 bg-white rounded-xl hover:bg-slate-50 transition-all border border-slate-200">
+          View Documentation
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="py-20 bg-slate-50/50">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">核心特性</h2>
+        <p class="text-lg text-slate-500 max-w-xl mx-auto">为 C/C++ 工程化项目量身打造的智能代码编辑能力</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="p-6 bg-white rounded-2xl border border-slate-100 card-hover">
+          <div class="w-11 h-11 flex items-center justify-center rounded-xl bg-brand-50 text-brand-600 mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">精准的静态解析</h3>
+          <p class="text-sm text-slate-500 leading-relaxed">依赖 libclang 深入解析 C/C++ 项目，收集函数、变量、类型和符号关系。</p>
+        </div>
+        <div class="p-6 bg-white rounded-2xl border border-slate-100 card-hover">
+          <div class="w-11 h-11 flex items-center justify-center rounded-xl bg-brand-50 text-brand-600 mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">语义增强 Prompt</h3>
+          <p class="text-sm text-slate-500 leading-relaxed">自动构造面向项目上下文的语义 Prompt，并在执行 Aider 前支持预览最终形态。</p>
+        </div>
+        <div class="p-6 bg-white rounded-2xl border border-slate-100 card-hover">
+          <div class="w-11 h-11 flex items-center justify-center rounded-xl bg-brand-50 text-brand-600 mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">灵活的运行模式</h3>
+          <p class="text-sm text-slate-500 leading-relaxed">提供基于 FastAPI + React/Vite 的可视化 Web UI，以及轻量级的命令行模式。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Use Cases Section -->
+  <section id="usage" class="py-20">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">典型任务</h2>
+        <p class="text-lg text-slate-500">NaturalCC Code Agent 可以帮你高效完成以下开发任务</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="divide-y divide-slate-100">
+          <div class="flex items-center gap-4 px-6 py-5 hover:bg-slate-50/50 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-900">补全函数体</h4>
+              <p class="text-sm text-slate-500 mt-0.5">根据函数签名和项目上下文，自动生成完整的函数实现。</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 px-6 py-5 hover:bg-slate-50/50 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-900">补全函数签名</h4>
+              <p class="text-sm text-slate-500 mt-0.5">基于调用点和类型推断，补全缺失的函数参数与返回类型声明。</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 px-6 py-5 hover:bg-slate-50/50 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-900">补全变量或类型</h4>
+              <p class="text-sm text-slate-500 mt-0.5">自动推断并补全代码中缺失的变量声明和类型定义。</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 px-6 py-5 hover:bg-slate-50/50 transition-colors">
+            <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-semibold text-slate-900">按项目现有风格做小范围代码修改</h4>
+              <p class="text-sm text-slate-500 mt-0.5">分析项目既有编码风格，在保持风格一致的前提下进行精准的局部代码调整。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture Section -->
+  <section id="architecture" class="py-20 bg-slate-50/50">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">架构设计</h2>
+        <p class="text-lg text-slate-500 max-w-xl mx-auto">模块化架构，易于扩展和自定义</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-white rounded-2xl border border-slate-100 p-6">
+          <h3 class="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+            规划层 (Planner)
+          </h3>
+          <p class="text-sm text-slate-500 leading-relaxed">接收自然语言指令，分析项目上下文，制定分步执行计划。支持复杂任务拆解和依赖分析。</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 p-6">
+          <h3 class="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+            执行层 (Executor)
+          </h3>
+          <p class="text-sm text-slate-500 leading-relaxed">按照计划执行具体编辑操作，包括文件读写、代码插入/删除/替换，支持原子化回滚。</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 p-6">
+          <h3 class="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+            验证层 (Validator)
+          </h3>
+          <p class="text-sm text-slate-500 leading-relaxed">自动运行语法检查、单元测试，确保修改后的代码正确可用，防止引入回归问题。</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 p-6">
+          <h3 class="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+            接口层 (Interface)
+          </h3>
+          <p class="text-sm text-slate-500 leading-relaxed">提供 CLI 命令行工具和 FastAPI + React/Vite Web UI，灵活集成到各种工作流。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-100 py-10">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-slate-900 font-bold">
+          <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
+          </svg>
+          NaturalCC
+        </div>
+        <p class="text-sm text-slate-400"> 2026 CodeMind & CGCL. All rights reserved.</p>
+        <div class="flex items-center gap-6 text-sm text-slate-500">
+          <a href="#" class="hover:text-brand-600 transition-colors">文档</a>
+          <a href="#" class="hover:text-brand-600 transition-colors">更新日志</a>
+          <a href="https://github.com/CGCL-codes/naturalcc" target="_blank" class="hover:text-brand-600 transition-colors">GitHub</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
