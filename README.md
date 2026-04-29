@@ -10,21 +10,21 @@
   Hero：H1 主标题 + H2 副标题（Aider 组合能力描述）+ 描述文字（C/C++ 项目解析流程）+ "Launch Web UI" 主按钮（科技蓝）+ "View Documentation" 次按钮（白底轮廓）
 
   核心特性（三列卡片）：
-    - 精准静态解析（libclang）
-    - 语义增强 Prompt
-    - 灵活运行模式（FastAPI + React/Vite Web UI & CLI）
+  - 精准静态解析（libclang）
+  - 语义增强 Prompt
+  - 灵活运行模式（FastAPI + React/Vite Web UI & CLI）
     
   典型任务（四项能力列表）：
-    - 补全函数体
-    - 补全函数签名
-    - 补全变量或类型
-    - 按风格做小范围修改
+  - 补全函数体
+  - 补全函数签名
+  - 补全变量或类型
+  - 按风格做小范围修改
     
   架构设计（四层模块）：
-    - Planner
-    - Executor
-    - Validator
-    - Interface
+  - Planner
+  - Executor
+  - Validator
+  - Interface
     
   页脚：© 2026 CodeMind & CGCL. All rights reserved.
 
